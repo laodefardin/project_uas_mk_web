@@ -1,35 +1,33 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
 
-class UserModel{
+class UserModel {
     private $db;
 
-    public function __construct(){
+    public function __construct() {
         $this->db = getKoneksi();
     }
 
-    public function tambahAkun($nama, $username, $hashPassword){
-        $query = "INSERT INTO admin (nama, username, password)
-                    VALUES (?, ?, ?)";
+    public function tambahAkun($nama, $username, $hashPassword, $hakAkses = 'operator') {
+        $query = "INSERT INTO admin (nama, username, password, hak_akses) VALUES (?, ?, ?, ?)";
 
         $stmt = mysqli_prepare($this->db, $query);
-        if (!$stmt){
+        if (!$stmt) {
             return false;
         }
 
-        mysqli_stmt_bind_param($stmt, "sss", $nama, $username, $hashPassword);
+        mysqli_stmt_bind_param($stmt, "ssss", $nama, $username, $hashPassword, $hakAkses);
         $hasil = mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
 
         return $hasil;
     }
 
-    public function getByUsername($username){
+    public function getByUsername($username) {
         $query = "SELECT * FROM admin WHERE username = ? LIMIT 1";
 
         $stmt = mysqli_prepare($this->db, $query);
-
-        if(!$stmt){
+        if (!$stmt) {
             return null;
         }
 
@@ -43,17 +41,49 @@ class UserModel{
         return $data;
     }
 
-    public function cekLogin($username, $password){
-        $akun = $this->getByUsername($username);
+    public function getById($id) {
+        $query = "SELECT * FROM admin WHERE id = ? LIMIT 1";
 
-        if (!$akun){
+        $stmt = mysqli_prepare($this->db, $query);
+        if (!$stmt) {
             return null;
         }
 
-        if (!password_verify($password, $akun['password'])){
+        mysqli_stmt_bind_param($stmt, "i", $id);
+        mysqli_stmt_execute($stmt);
+
+        $result = mysqli_stmt_get_result($stmt);
+        $data = mysqli_fetch_assoc($result);
+
+        mysqli_stmt_close($stmt);
+        return $data;
+    }
+
+    public function cekLogin($username, $password) {
+        $akun = $this->getByUsername($username);
+
+        if (!$akun) {
+            return null;
+        }
+
+        if (!password_verify($password, $akun['password'])) {
             return null;
         }
 
         return $akun;
+    }
+
+    public function updatePassword($id, $hashPassword) {
+        $query = "UPDATE admin SET password = ? WHERE id = ?";
+        $stmt = mysqli_prepare($this->db, $query);
+        if (!$stmt) {
+            return false;
+        }
+
+        mysqli_stmt_bind_param($stmt, "si", $hashPassword, $id);
+        $hasil = mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+
+        return $hasil;
     }
 }

@@ -1,0 +1,7 @@
+# Matikan eksekusi skrip PHP di folder uploads untuk keamanan
+<FilesMatch "(?i)\.(php|phtml|php3|php4|php5|php7|phps)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+Options -Indexes

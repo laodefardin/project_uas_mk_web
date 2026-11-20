@@ -14,15 +14,16 @@ spl_autoload_register(function($class) {
 });
 
 require_once __DIR__ . '/config/session.php';
+require_once __DIR__ . '/config/helper.php';
 
 $controller = new MahasiswaController();
-$auth = new AuthController();
+$auth       = new AuthController();
 
 $aksi = $_GET['act'] ?? 'index';
 
-switch ($aksi){
+switch ($aksi) {
 
-    // halaman yang boleh dibuka tanpa login
+    // Halaman publik tanpa login
     case 'login':
         $auth->login();
         break;
@@ -43,8 +44,32 @@ switch ($aksi){
         $auth->logout();
         break;
 
+    // Halaman yang wajib login
+    case 'profil':
+        wajibLogin();
+        $auth->profil();
+        break;
 
-        // halaman yang wajib login
+    case 'updatePassword':
+        wajibLogin();
+        $auth->updatePassword();
+        break;
+
+    case 'exportCsv':
+        wajibLogin();
+        $controller->exportCsv();
+        break;
+
+    case 'cetakLaporan':
+        wajibLogin();
+        $controller->cetakLaporan();
+        break;
+
+    case 'cetakKtm':
+        wajibLogin();
+        $controller->cetakKtm();
+        break;
+
     case 'hapus':
         wajibLogin();
         $controller->hapus();

@@ -6,22 +6,18 @@ function e($teks){
 
 define('BASE_URL', '/pertemuan12');
 
-// function url($act = 'index', $tambahan = []) {
-//     $hasil = rtrim(BASE_URL, '/') . '/' . $act;
-
-//     if (!empty($tambahan)) {
-//         $hasil .= '?' . http_build_query($tambahan);
-//     }
-
-//     return $hasil;
-// }
-
 function url($act = 'index', $tambahan = []) {
     $dasar = rtrim(BASE_URL, '/');
 
-    // Aksi edit dan hapus memakai bentuk /edit/24010001
-    if (in_array($act, ['edit', 'hapus']) && isset($tambahan['nim'])) {
-        return $dasar . '/' . $act . '/' . rawurlencode($tambahan['nim']);
+    // Aksi edit, hapus, dan cetakKtm memakai bentuk clean URL: /edit/24010001
+    if (in_array($act, ['edit', 'hapus', 'cetakKtm']) && isset($tambahan['nim'])) {
+        $nim = rawurlencode($tambahan['nim']);
+        unset($tambahan['nim']);
+        $hasil = $dasar . '/' . $act . '/' . $nim;
+        if (!empty($tambahan)) {
+            $hasil .= '?' . http_build_query($tambahan);
+        }
+        return $hasil;
     }
 
     $hasil = $dasar . '/' . $act;

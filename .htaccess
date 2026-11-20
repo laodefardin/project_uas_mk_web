@@ -3,21 +3,17 @@ RewriteEngine On
 # Sesuaikan dengan nama folder proyek kalian di htdocs
 RewriteBase /pertemuan12/
 
-# Jangan ganggu berkas dan folder yang benar-benar ada
+# Jangan ganggu berkas dan folder yang benar-benar ada (gambar di uploads, css, js)
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 
-# /login  ->  index.php?act=login
-RewriteRule ^([a-z0-9\-]+)/?$ index.php?act=$1 [QSA,L]
+# Route khusus dengan parameter di URL
+RewriteRule ^edit/([^/]+)/?$ index.php?act=edit&nim=$1 [NC,QSA,L]
+RewriteRule ^hapus/([^/]+)/?$ index.php?act=hapus&nim=$1 [NC,QSA,L]
+RewriteRule ^cetakKtm/([^/]+)/?$ index.php?act=cetakKtm&nim=$1 [NC,QSA,L]
 
-# /login?error=...  tetap membawa parameternya
-RewriteRule ^prosesLogin/?$ index.php?act=prosesLogin [QSA,L]
-
-# /edit/24010001  ->  index.php?act=edit&nim=24010001
-RewriteRule ^edit/([^/]+)/?$ index.php?act=edit&nim=$1 [QSA,L]
-
-# /hapus/24010001  ->  index.php?act=hapus&nim=24010001
-RewriteRule ^hapus/([^/]+)/?$ index.php?act=hapus&nim=$1 [QSA,L]
+# Route umum untuk semua aksi (case-insensitive: login, exportCsv, cetakLaporan, profil, updatePassword, dll)
+RewriteRule ^([a-zA-Z0-9\-_]+)/?$ index.php?act=$1 [NC,QSA,L]
 
 # Tutup akses langsung ke folder internal
 RewriteRule ^(config|models|controllers|views)/ - [F,L]
