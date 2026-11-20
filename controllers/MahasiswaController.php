@@ -9,7 +9,15 @@ class MahasiswaController {
     }
 
     public function index(){
-        $daftar_mahasiswa = $this->model->getAll();
+        $perPage = 10;
+        $page = max(1, (int)($_GET['page'] ?? 1));
+        $keyword = trim($_GET['q'] ?? '');
+        $jurusan = trim($_GET['jurusan'] ?? '');
+
+        $total = $this->model->countAll($keyword, $jurusan);
+        $totalHalaman = max(1, (int)ceil($total / $perPage));
+        $page = min($page, $totalHalaman);
+        $daftar_mahasiswa = $this->model->getPage($page, $perPage, $keyword, $jurusan);
 
         require_once __DIR__ . '/../views/mahasiswa/index.php';
     }
@@ -20,6 +28,19 @@ class MahasiswaController {
 
     public function simpan(){
         if($_SERVER['REQUEST_METHOD'] === 'POST'){
+            verifyCsrfToken($_POST['csrf_token'] ?? '');
+
+            $nim = trim($_POST['nim'] ?? '');
+            $ipk = $_POST['ipk'] ?? '';
+            if (!preg_match('/^\d{8}$/', $nim)) {
+                setPesan('gagal', 'NIM harus tepat 8 digit angka.');
+                header("Location: " . url('tambah')); exit;
+            }
+            if (!is_numeric($ipk) || (float)$ipk < 0 || (float)$ipk > 4) {
+                setPesan('gagal', 'IPK harus berupa angka antara 0.00 hingga 4.00.');
+                header("Location: " . url('tambah')); exit;
+            }
+
             $hasil = $this->model->tambah($_POST);
 
             if($hasil) {
@@ -50,7 +71,19 @@ class MahasiswaController {
 
     public function update(){
         if($_SERVER['REQUEST_METHOD'] === 'POST'){
-            $nim = $_POST['nim'];
+            verifyCsrfToken($_POST['csrf_token'] ?? '');
+
+            $nim = trim($_POST['nim'] ?? '');
+            $ipk = $_POST['ipk'] ?? '';
+            if (!preg_match('/^\d{8}$/', $nim)) {
+                setPesan('gagal', 'NIM harus tepat 8 digit angka.');
+                header("Location: " . url('edit', ['nim' => $nim])); exit;
+            }
+            if (!is_numeric($ipk) || (float)$ipk < 0 || (float)$ipk > 4) {
+                setPesan('gagal', 'IPK harus berupa angka antara 0.00 hingga 4.00.');
+                header("Location: " . url('edit', ['nim' => $nim])); exit;
+            }
+
             $this->model->ubah($nim, $_POST);
 
             setPesan('sukses', 'Data Berhasil Di ubah');
@@ -60,7 +93,11 @@ class MahasiswaController {
     }
 
     public function hapus(){
-        $nim = $_GET['nim'] ?? '';
+        $nim = $_POST['nim'] ?? $_GET['nim'] ?? '';
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            verifyCsrfToken($_POST['csrf_token'] ?? '');
+        }
 
         if(!empty($nim)){
             

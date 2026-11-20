@@ -16,10 +16,12 @@ class AuthController{
     }
 
     public function simpanRegister(){
-        if($_SERVER['REQUEST_METHOD'!== 'POST']){
+        if($_SERVER['REQUEST_METHOD'] !== 'POST'){
             header("Location: index.php?act=register");
             exit;
         }
+
+        verifyCsrfToken($_POST['csrf_token'] ?? '');
 
         $nama   = trim($_POST['nama'] ?? '');
         $username = trim($_POST['username'] ?? '');
@@ -65,7 +67,7 @@ class AuthController{
     }
 
     public function prosesLogin(){
-        if($_SERVER['REQUEST_METHOD' !== 'POST']){
+        if($_SERVER['REQUEST_METHOD'] !== 'POST'){
             header("Location: index.php?act=login");
             exit;
         }

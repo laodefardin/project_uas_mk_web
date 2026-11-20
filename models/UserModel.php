@@ -21,7 +21,7 @@ class UserModel{
         $hasil = mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
 
-        return $hashPassword;
+        return $hasil;
     }
 
     public function getByUsername($username){

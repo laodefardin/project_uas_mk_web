@@ -108,4 +108,126 @@ class MahasiswaModel {
 
         return mysqli_stmt_execute($stmt);
     }
+
+    public function search($keyword = '', $jurusan = '') {
+        $params = [];
+        $types = '';
+        $where = [];
+
+        if (!empty($keyword)) {
+            $where[] = "(nama LIKE ? OR nim LIKE ?)";
+            $like = '%' . $keyword . '%';
+            $params[] = $like;
+            $params[] = $like;
+            $types .= 'ss';
+        }
+
+        if (!empty($jurusan)) {
+            $where[] = "jurusan = ?";
+            $params[] = $jurusan;
+            $types .= 's';
+        }
+
+        $query = "SELECT * FROM mahasiswa";
+        if (!empty($where)) {
+            $query .= " WHERE " . implode(" AND ", $where);
+        }
+        $query .= " ORDER BY nim ASC";
+
+        if (empty($params)) {
+            return $this->getAll();
+        }
+
+        $stmt = mysqli_prepare($this->db, $query);
+        mysqli_stmt_bind_param($stmt, $types, ...$params);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
+        $daftar = [];
+        while ($baris = mysqli_fetch_assoc($result)) {
+            $daftar[] = $baris;
+        }
+        mysqli_stmt_close($stmt);
+        return $daftar;
+    }
+
+    public function countAll($keyword = '', $jurusan = '') {
+        $params = [];
+        $types = '';
+        $where = [];
+
+        if (!empty($keyword)) {
+            $where[] = "(nama LIKE ? OR nim LIKE ?)";
+            $like = '%' . $keyword . '%';
+            $params[] = $like;
+            $params[] = $like;
+            $types .= 'ss';
+        }
+
+        if (!empty($jurusan)) {
+            $where[] = "jurusan = ?";
+            $params[] = $jurusan;
+            $types .= 's';
+        }
+
+        $query = "SELECT COUNT(*) as total FROM mahasiswa";
+        if (!empty($where)) {
+            $query .= " WHERE " . implode(" AND ", $where);
+        }
+
+        if (empty($params)) {
+            $result = mysqli_query($this->db, $query);
+            $row = mysqli_fetch_assoc($result);
+            return (int)$row['total'];
+        }
+
+        $stmt = mysqli_prepare($this->db, $query);
+        mysqli_stmt_bind_param($stmt, $types, ...$params);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $row = mysqli_fetch_assoc($result);
+        return (int)$row['total'];
+    }
+
+    public function getPage($page = 1, $perPage = 10, $keyword = '', $jurusan = '') {
+        $offset = ($page - 1) * $perPage;
+        $params = [];
+        $types = '';
+        $where = [];
+
+        if (!empty($keyword)) {
+            $where[] = "(nama LIKE ? OR nim LIKE ?)";
+            $like = '%' . $keyword . '%';
+            $params[] = $like;
+            $params[] = $like;
+            $types .= 'ss';
+        }
+
+        if (!empty($jurusan)) {
+            $where[] = "jurusan = ?";
+            $params[] = $jurusan;
+            $types .= 's';
+        }
+
+        $query = "SELECT * FROM mahasiswa";
+        if (!empty($where)) {
+            $query .= " WHERE " . implode(" AND ", $where);
+        }
+        $query .= " ORDER BY nim ASC LIMIT ? OFFSET ?";
+        $params[] = $perPage;
+        $params[] = $offset;
+        $types .= 'ii';
+
+        $stmt = mysqli_prepare($this->db, $query);
+        mysqli_stmt_bind_param($stmt, $types, ...$params);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
+        $daftar = [];
+        while ($baris = mysqli_fetch_assoc($result)) {
+            $daftar[] = $baris;
+        }
+        mysqli_stmt_close($stmt);
+        return $daftar;
+    }
 }

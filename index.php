@@ -1,7 +1,18 @@
 <?php
 
-require_once __DIR__ . '/controllers/MahasiswaController.php';
-require_once __DIR__ . '/controllers/AuthController.php';
+spl_autoload_register(function($class) {
+    $paths = [
+        __DIR__ . '/controllers/' . $class . '.php',
+        __DIR__ . '/models/' . $class . '.php',
+    ];
+    foreach ($paths as $path) {
+        if (file_exists($path)) {
+            require_once $path;
+            return;
+        }
+    }
+});
+
 require_once __DIR__ . '/config/session.php';
 
 $controller = new MahasiswaController();
