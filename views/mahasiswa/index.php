@@ -75,66 +75,68 @@ $pesan = ambilPesan();
     </div>
 
     <!-- Filter Bar Rapi & Seimbang -->
-    <div class="card-body bg-light bg-opacity-25 py-3 border-bottom">
-        <form method="GET" action="<?= url('index'); ?>" class="row g-2 align-items-center">
-            <div class="col-12 col-md-4">
-                <div class="input-group input-group-sm">
-                    <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-search"></i></span>
-                    <input type="text" name="q" class="form-control border-start-0" placeholder="Cari nama atau NIM..." value="<?= e($_GET['q'] ?? '') ?>">
+    <div class="card-body bg-light bg-opacity-50 py-3 border-bottom">
+        <form method="GET" action="<?= url('index'); ?>">
+            <div class="row g-2 align-items-center">
+                <div class="col-lg-4 col-md-12">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-search"></i></span>
+                        <input type="text" name="q" class="form-control border-start-0" placeholder="Cari nama atau NIM..." value="<?= e($_GET['q'] ?? '') ?>">
+                    </div>
                 </div>
-            </div>
 
-            <div class="col-6 col-md-3">
-                <select name="jurusan" class="form-select form-select-sm">
-                    <option value="">-- Semua Prodi --</option>
-                    <?php
-                    $jurusanList = [
-                        'Pendidikan Teknologi Informasi',
-                        'Pendidikan Ilmu Pengetahuan Alam',
-                        'Pendidikan Biologi',
-                        'Pendidikan Fisika',
-                        'Pendidikan Matematika'
-                    ];
-                    $selectedJurusan = $_GET['jurusan'] ?? '';
-                    foreach ($jurusanList as $p):
-                    ?>
-                    <option value="<?= e($p); ?>" <?= ($selectedJurusan === $p) ? 'selected' : ''; ?>><?= e($p); ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <select name="jurusan" class="form-select form-select-sm">
+                        <option value="">-- Semua Prodi --</option>
+                        <?php
+                        $jurusanList = [
+                            'Pendidikan Teknologi Informasi',
+                            'Pendidikan Ilmu Pengetahuan Alam',
+                            'Pendidikan Biologi',
+                            'Pendidikan Fisika',
+                            'Pendidikan Matematika'
+                        ];
+                        $selectedJurusan = $_GET['jurusan'] ?? '';
+                        foreach ($jurusanList as $p):
+                        ?>
+                        <option value="<?= e($p); ?>" <?= ($selectedJurusan === $p) ? 'selected' : ''; ?>><?= e($p); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
 
-            <div class="col-6 col-md-2">
-                <select name="status" class="form-select form-select-sm">
-                    <option value="">-- Semua Status --</option>
-                    <?php
-                    $statusList = ['Aktif', 'Cuti', 'Lulus', 'DO'];
-                    $selectedStatus = $_GET['status'] ?? '';
-                    foreach ($statusList as $st):
-                    ?>
-                    <option value="<?= $st; ?>" <?= ($selectedStatus === $st) ? 'selected' : ''; ?>><?= e($st); ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
+                <div class="col-lg-2 col-md-4 col-sm-6">
+                    <select name="status" class="form-select form-select-sm">
+                        <option value="">-- Semua Status --</option>
+                        <?php
+                        $statusList = ['Aktif', 'Cuti', 'Lulus', 'DO'];
+                        $selectedStatus = $_GET['status'] ?? '';
+                        foreach ($statusList as $st):
+                        ?>
+                        <option value="<?= $st; ?>" <?= ($selectedStatus === $st) ? 'selected' : ''; ?>><?= e($st); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
 
-            <div class="col-6 col-md-2">
-                <select name="angkatan" class="form-select form-select-sm">
-                    <option value="">-- Angkatan --</option>
-                    <?php
-                    $selectedAngkatan = (int)($_GET['angkatan'] ?? 0);
-                    foreach ($angkatanList as $ang):
-                    ?>
-                    <option value="<?= $ang; ?>" <?= ($selectedAngkatan === $ang) ? 'selected' : ''; ?>><?= $ang; ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
+                <div class="col-lg-2 col-md-4 col-sm-6">
+                    <select name="angkatan" class="form-select form-select-sm">
+                        <option value="">-- Semua Angkatan --</option>
+                        <?php
+                        $selectedAngkatan = (int)($_GET['angkatan'] ?? 0);
+                        foreach ($angkatanList as $ang):
+                        ?>
+                        <option value="<?= $ang; ?>" <?= ($selectedAngkatan === $ang) ? 'selected' : ''; ?>><?= $ang; ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
 
-            <div class="col-6 col-md-1 d-flex gap-1">
-                <button type="submit" class="btn btn-sm btn-primary w-100" title="Terapkan Filter">
-                    <i class="bi bi-filter"></i>
-                </button>
-                <a href="<?= url('index'); ?>" class="btn btn-sm btn-outline-secondary w-100" title="Reset Filter">
-                    <i class="bi bi-arrow-counterclockwise"></i>
-                </a>
+                <div class="col-lg-1 col-md-12 col-sm-6 d-flex gap-1">
+                    <button type="submit" class="btn btn-sm btn-primary flex-fill" title="Terapkan Filter">
+                        <i class="bi bi-funnel"></i>
+                    </button>
+                    <a href="<?= url('index'); ?>" class="btn btn-sm btn-outline-secondary flex-fill text-center" title="Reset Filter">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
+                </div>
             </div>
         </form>
     </div>
@@ -142,7 +144,7 @@ $pesan = ambilPesan();
     <!-- Tabel Data Mahasiswa (Valid HTML, No stray divs) -->
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
+            <thead class="table-light text-nowrap">
                 <tr>
                     <th class="ps-3" style="width: 40px;">#</th>
                     <th style="width: 50px;">Foto</th>
@@ -218,18 +220,18 @@ $pesan = ambilPesan();
                             <?= number_format($ipk, 2); ?>
                         </span>
                     </td>
-                    <td class="text-center pe-3">
-                        <div class="btn-group btn-group-sm" role="group">
-                            <button type="button" class="btn btn-light border text-primary" data-bs-toggle="modal" data-bs-target="#modalDetail<?= $cleanNim; ?>" title="Lihat Profil">
+                    <td class="text-center text-nowrap pe-3" style="min-width: 120px;">
+                        <div class="d-inline-flex gap-1 align-items-center justify-content-center">
+                            <button type="button" class="btn btn-sm btn-light border text-primary" data-bs-toggle="modal" data-bs-target="#modalDetail<?= $cleanNim; ?>" title="Lihat Profil">
                                 <i class="bi bi-eye"></i>
                             </button>
-                            <a href="<?= url('edit', ['nim' => $mhs['nim']]); ?>" class="btn btn-light border text-warning" title="Edit Data">
+                            <a href="<?= url('edit', ['nim' => $mhs['nim']]); ?>" class="btn btn-sm btn-light border text-warning" title="Edit Data">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            <form action="<?= url('hapus', ['nim' => $mhs['nim']]); ?>" method="POST" onsubmit="return confirm('Hapus data mahasiswa <?= e($mhs['nama']); ?>?')" style="display:inline">
+                            <form action="<?= url('hapus', ['nim' => $mhs['nim']]); ?>" method="POST" onsubmit="return confirm('Hapus data mahasiswa <?= e($mhs['nama']); ?>?')" class="d-inline m-0">
                                 <input type="hidden" name="csrf_token" value="<?= generateCsrfToken(); ?>">
                                 <input type="hidden" name="nim" value="<?= e($mhs['nim']); ?>">
-                                <button type="submit" class="btn btn-light border text-danger" title="Hapus Data">
+                                <button type="submit" class="btn btn-sm btn-light border text-danger" title="Hapus Data">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </form>

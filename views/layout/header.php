@@ -24,6 +24,13 @@ require_once __DIR__ . '/../../config/session.php';
         .table tr:last-child td { border-bottom: none; }
         .badge { font-weight: 500; border-radius: 5px; }
         .form-control, .form-select { border-radius: 6px; font-size: 0.86rem; border-color: #cbd5e1; }
+        select.form-select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-position: right 0.65rem center;
+            background-size: 14px 10px;
+        }
         .form-control:focus, .form-select:focus { border-color: #0d6efd; box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.12); }
         .pagination .page-link { border-radius: 5px !important; margin: 0 2px; font-size: 0.82rem; }
         .alert { border-radius: 8px; font-size: 0.86rem; }
