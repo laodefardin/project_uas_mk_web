@@ -21,7 +21,7 @@ require_once __DIR__ . '/../layout/header.php';
                     <!-- Bagian Foto Profil Mahasiswa dengan Live Preview -->
                     <div class="d-flex align-items-center gap-4 mb-4 p-3 bg-light rounded-3 border">
                         <div class="position-relative">
-                            <img id="previewFoto" src="https://via.placeholder.com/100x125?text=Foto" alt="Preview Foto" 
+                            <img id="previewFoto" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='115' viewBox='0 0 90 115'><rect width='90' height='115' fill='%23f1f5f9'/><circle cx='45' cy='42' r='18' fill='%23cbd5e1'/><path d='M20 95c0-18 12-28 25-28s25 10 25 28z' fill='%23cbd5e1'/></svg>" alt="Preview Foto" 
                                  class="rounded border bg-white shadow-sm" style="width: 90px; height: 115px; object-fit: cover;">
                         </div>
                         <div class="flex-grow-1">

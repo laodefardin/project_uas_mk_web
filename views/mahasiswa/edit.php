@@ -24,7 +24,7 @@ require_once __DIR__ . '/../layout/header.php';
                             <?php 
                             $fotoSrc = (!empty($mahasiswa['foto']) && file_exists(__DIR__ . '/../../uploads/' . $mahasiswa['foto']))
                                 ? '/pertemuan12/uploads/' . htmlspecialchars($mahasiswa['foto'], ENT_QUOTES, 'UTF-8')
-                                : 'https://via.placeholder.com/100x125?text=Foto';
+                                : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='115' viewBox='0 0 90 115'><rect width='90' height='115' fill='%23f1f5f9'/><circle cx='45' cy='42' r='18' fill='%23cbd5e1'/><path d='M20 95c0-18 12-28 25-28s25 10 25 28z' fill='%23cbd5e1'/></svg>";
                             ?>
                             <img id="previewFoto" src="<?= $fotoSrc; ?>" alt="Foto Mahasiswa" 
                                  class="rounded border bg-white shadow-sm" style="width: 90px; height: 115px; object-fit: cover;">
