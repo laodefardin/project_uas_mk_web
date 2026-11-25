@@ -97,7 +97,11 @@ switch ($aksi) {
 
     case 'index':
     default:
-        wajibLogin();
+        // Pengunjung yang belum login melihat landing page
+        if (!sudahLogin()) {
+            $auth->landing();
+            break;
+        }
         $controller->index();
         break;
 }

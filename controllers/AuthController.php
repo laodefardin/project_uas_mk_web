@@ -61,6 +61,10 @@ class AuthController {
         exit;
     }
 
+    public function landing() {
+        require_once __DIR__ . '/../views/landing/index.php';
+    }
+
     public function login() {
         if (sudahLogin()) {
             header("Location: " . url('index'));

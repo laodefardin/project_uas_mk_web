@@ -28,3 +28,11 @@ function url($act = 'index', $tambahan = []) {
 
     return $hasil;
 }
+
+// Tanda merek: layar sandeq sederhana satu warna, mengikuti warna teks sekitar (dipakai di halaman aplikasi)
+function tandaMerek() {
+    return '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">'
+         . '<path d="M10.5 2 16 13.5H10.5V2Z" fill="currentColor"/>'
+         . '<path d="M9 5 4.5 13.5H9V5Z" fill="currentColor" opacity=".55"/>'
+         . '<path d="M3 16h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+}

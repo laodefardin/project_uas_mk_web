@@ -1,353 +1,321 @@
 <?php
-$judul_halaman = "Daftar Mahasiswa - SIAKAD PTI Unsulbar";
+$judul_halaman = "Data Mahasiswa - SIAKAD Kampusku";
 require_once __DIR__ . '/../layout/header.php';
 
 $pesan = ambilPesan();
+
+$fotoUrl  = rtrim(BASE_URL, '/') . '/uploads/';
+$totalMhs = (int)($stats['total'] ?? 0);
+$aktifMhs = (int)($stats['aktif'] ?? 0);
+$persenAktif = $totalMhs > 0 ? round($aktifMhs / $totalMhs * 100) : 0;
+
+$sebaranProdi = $stats['prodi'] ?? [];
+arsort($sebaranProdi);
+$maksProdi = $sebaranProdi ? max($sebaranProdi) : 0;
+
+function inisialNama($nama) {
+    $kata = preg_split('/\s+/', trim((string)$nama));
+    $dua = substr($kata[0] ?? '', 0, 1) . (count($kata) > 1 ? substr(end($kata), 0, 1) : '');
+    return strtoupper($dua);
+}
+function kelasStatus($st) {
+    return 'is-' . strtolower(preg_replace('/[^a-zA-Z]/', '', (string)$st));
+}
 ?>
 
 <?php if ($pesan !== null): ?>
-<div class="alert alert-<?= $pesan['tipe'] === 'sukses' ? 'success' : 'danger'; ?> mb-4 alert-dismissible fade show d-flex align-items-center shadow-sm" role="alert">
-    <i class="bi <?= $pesan['tipe'] === 'sukses' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'; ?> fs-5 me-2"></i>
-    <div><?= htmlspecialchars($pesan['isi'], ENT_QUOTES, 'UTF-8'); ?></div>
-    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+<div class="alert alert-<?= $pesan['tipe'] === 'sukses' ? 'success' : 'danger'; ?> alert-dismissible fade show mb-4" role="alert">
+    <?= e($pesan['isi']); ?>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
 </div>
 <?php endif; ?>
 
-<!-- 1. DASHBOARD METRIC BAR (CLEAN & MINIMALIST) -->
-<div class="card shadow-sm border-0 mb-4 bg-white">
-    <div class="card-body p-0">
-        <div class="row g-0 text-center">
-            <div class="col-6 col-md-3 py-3 px-3 border-end">
-                <span class="text-muted small fw-medium">Total Mahasiswa</span>
-                <h3 class="mb-0 fw-bold mt-1 text-dark"><?= $stats['total'] ?? 0; ?></h3>
-                <small class="text-muted text-nowrap">Mahasiswa terdaftar</small>
-            </div>
-            <div class="col-6 col-md-3 py-3 px-3 border-end">
-                <span class="text-muted small fw-medium">Rata-rata IPK</span>
-                <h3 class="mb-0 fw-bold mt-1 text-primary"><?= $stats['avg_ipk'] ?? '0.00'; ?></h3>
-                <small class="text-muted text-nowrap">Skala maksimum 4.00</small>
-            </div>
-            <div class="col-6 col-md-3 py-3 px-3 border-end">
-                <span class="text-muted small fw-medium">Mahasiswa Aktif</span>
-                <h3 class="mb-0 fw-bold mt-1 text-success"><?= $stats['aktif'] ?? 0; ?></h3>
-                <small class="text-muted text-nowrap">Status aktif kuliah</small>
-            </div>
-            <div class="col-6 col-md-3 py-3 px-3">
-                <span class="text-muted small fw-medium">Predikat Cumlaude</span>
-                <h3 class="mb-0 fw-bold mt-1 text-dark"><?= $stats['cumlaude'] ?? 0; ?></h3>
-                <small class="text-success text-nowrap fw-medium"><i class="bi bi-star-fill me-1"></i>IPK &ge; 3.50</small>
-            </div>
-        </div>
+<div class="page-head rise">
+    <div>
+        <h1 class="page-title">Data Mahasiswa</h1>
+        <p class="page-sub">Kelola informasi akademik dan data pribadi mahasiswa</p>
     </div>
-</div>
-
-<!-- 2. DATA MAHASISWA & FILTER SECTION -->
-<div class="card shadow-sm border-0 bg-white">
-    <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between flex-wrap gap-2 border-bottom">
-        <div>
-            <h5 class="m-0 fw-semibold text-dark">Data Mahasiswa</h5>
-            <small class="text-muted">Kelola informasi akademik dan data pribadi mahasiswa</small>
-        </div>
-        <div class="d-flex align-items-center gap-2">
-            <!-- Dropdown Aksi Ekspor & Cetak yang Rapi -->
-            <div class="dropdown">
-                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                    <i class="bi bi-download me-1"></i>Ekspor / Cetak
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                    <li>
-                        <a class="dropdown-item small" href="<?= url('exportCsv', $_GET); ?>">
-                            <i class="bi bi-file-earmark-excel me-2 text-success"></i>Download Data (CSV/Excel)
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item small" href="<?= url('cetakLaporan', $_GET); ?>" target="_blank">
-                            <i class="bi bi-printer me-2 text-secondary"></i>Cetak Laporan Resmi (Print)
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <a href="<?= url('tambah'); ?>" class="btn btn-sm btn-primary">
-                <i class="bi bi-plus-lg me-1"></i>Tambah Mahasiswa
-            </a>
-        </div>
-    </div>
-
-    <!-- Filter Bar Rapi & Seimbang -->
-    <div class="card-body bg-light bg-opacity-50 py-3 border-bottom">
-        <form method="GET" action="<?= url('index'); ?>">
-            <div class="row g-2 align-items-center">
-                <div class="col-lg-4 col-md-12">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-search"></i></span>
-                        <input type="text" name="q" class="form-control border-start-0" placeholder="Cari nama atau NIM..." value="<?= e($_GET['q'] ?? '') ?>">
-                    </div>
-                </div>
-
-                <div class="col-lg-3 col-md-4 col-sm-6">
-                    <select name="jurusan" class="form-select form-select-sm">
-                        <option value="">-- Semua Prodi --</option>
-                        <?php
-                        $jurusanList = [
-                            'Pendidikan Teknologi Informasi',
-                            'Pendidikan Ilmu Pengetahuan Alam',
-                            'Pendidikan Biologi',
-                            'Pendidikan Fisika',
-                            'Pendidikan Matematika'
-                        ];
-                        $selectedJurusan = $_GET['jurusan'] ?? '';
-                        foreach ($jurusanList as $p):
-                        ?>
-                        <option value="<?= e($p); ?>" <?= ($selectedJurusan === $p) ? 'selected' : ''; ?>><?= e($p); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <div class="col-lg-2 col-md-4 col-sm-6">
-                    <select name="status" class="form-select form-select-sm">
-                        <option value="">-- Semua Status --</option>
-                        <?php
-                        $statusList = ['Aktif', 'Cuti', 'Lulus', 'DO'];
-                        $selectedStatus = $_GET['status'] ?? '';
-                        foreach ($statusList as $st):
-                        ?>
-                        <option value="<?= $st; ?>" <?= ($selectedStatus === $st) ? 'selected' : ''; ?>><?= e($st); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <div class="col-lg-2 col-md-4 col-sm-6">
-                    <select name="angkatan" class="form-select form-select-sm">
-                        <option value="">-- Semua Angkatan --</option>
-                        <?php
-                        $selectedAngkatan = (int)($_GET['angkatan'] ?? 0);
-                        foreach ($angkatanList as $ang):
-                        ?>
-                        <option value="<?= $ang; ?>" <?= ($selectedAngkatan === $ang) ? 'selected' : ''; ?>><?= $ang; ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <div class="col-lg-1 col-md-12 col-sm-6 d-flex gap-1">
-                    <button type="submit" class="btn btn-sm btn-primary flex-fill" title="Terapkan Filter">
-                        <i class="bi bi-funnel"></i>
-                    </button>
-                    <a href="<?= url('index'); ?>" class="btn btn-sm btn-outline-secondary flex-fill text-center" title="Reset Filter">
-                        <i class="bi bi-arrow-counterclockwise"></i>
-                    </a>
-                </div>
-            </div>
-        </form>
-    </div>
-
-    <!-- Tabel Data Mahasiswa (Valid HTML, No stray divs) -->
-    <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-            <thead class="table-light text-nowrap">
-                <tr>
-                    <th class="ps-3" style="width: 40px;">#</th>
-                    <th style="width: 50px;">Foto</th>
-                    <th style="width: 100px;">NIM</th>
-                    <th>Nama Mahasiswa</th>
-                    <th>Program Studi</th>
-                    <th class="text-center" style="width: 80px;">Status</th>
-                    <th class="text-center" style="width: 70px;">IPK</th>
-                    <th class="text-center pe-3" style="width: 110px;">Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (empty($daftar_mahasiswa)): ?>
-                <tr>
-                    <td colspan="8" class="text-center text-muted py-5">
-                        <i class="bi bi-inbox fs-2 d-block text-secondary opacity-50 mb-2"></i>
-                        Tidak ada data mahasiswa yang cocok dengan kriteria.
-                    </td>
-                </tr>
-                <?php else: ?>
-                <?php
-                $no = (($page - 1) * $perPage) + 1;
-                foreach ($daftar_mahasiswa as $mhs):
-                    $cleanNim = preg_replace('/[^a-zA-Z0-9]/', '', $mhs['nim']);
-                ?>
-                <tr>
-                    <td class="ps-3 text-muted small"><?= $no++; ?></td>
-                    <td>
-                        <?php if (!empty($mhs['foto']) && file_exists(__DIR__ . '/../../uploads/' . $mhs['foto'])): ?>
-                            <img src="/pertemuan12/uploads/<?= e($mhs['foto']); ?>" alt="Foto" class="avatar-sm border">
-                        <?php else: ?>
-                            <div class="avatar-placeholder">
-                                <?= strtoupper(substr($mhs['nama'], 0, 1)); ?>
-                            </div>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <span class="font-monospace fw-semibold text-dark small"><?= e($mhs['nim']); ?></span>
-                    </td>
-                    <td>
-                        <div class="fw-semibold text-dark"><?= e($mhs['nama']); ?></div>
-                        <div class="text-muted small" style="font-size: 0.78rem;">
-                            <?= ($mhs['jenis_kelamin'] ?? 'L') === 'L' ? 'L' : 'P'; ?> &middot;
-                            <?= e($mhs['tempat_lahir']); ?>, <?= date('d M Y', strtotime($mhs['tanggal_lahir'])); ?>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="text-dark small fw-medium"><?= e($mhs['jurusan']); ?></div>
-                        <div class="text-muted small" style="font-size: 0.78rem;">
-                            Angkatan <?= e($mhs['angkatan'] ?? 2024); ?> &middot; <?= e($mhs['fakultas']); ?>
-                        </div>
-                    </td>
-                    <td class="text-center">
-                        <?php
-                        $st = $mhs['status'] ?? 'Aktif';
-                        $stBadge = match($st) {
-                            'Aktif' => 'bg-success bg-opacity-10 text-success border-success border-opacity-25',
-                            'Cuti'  => 'bg-warning bg-opacity-10 text-warning border-warning border-opacity-25',
-                            'Lulus' => 'bg-info bg-opacity-10 text-info border-info border-opacity-25',
-                            default => 'bg-danger bg-opacity-10 text-danger border-danger border-opacity-25'
-                        };
-                        ?>
-                        <span class="badge border <?= $stBadge; ?> px-2 py-1" style="font-size: 0.75rem;">
-                            <?= e($st); ?>
-                        </span>
-                    </td>
-                    <td class="text-center">
-                        <?php
-                        $ipk = (float)$mhs['ipk'];
-                        $badgeColor = $ipk >= 3.5 ? 'bg-success' : ($ipk >= 3.0 ? 'bg-primary' : ($ipk >= 2.5 ? 'bg-warning text-dark' : 'bg-danger'));
-                        ?>
-                        <span class="badge <?= $badgeColor; ?> px-2 py-1" style="font-size: 0.75rem;">
-                            <?= number_format($ipk, 2); ?>
-                        </span>
-                    </td>
-                    <td class="text-center text-nowrap pe-3" style="min-width: 120px;">
-                        <div class="d-inline-flex gap-1 align-items-center justify-content-center">
-                            <button type="button" class="btn btn-sm btn-light border text-primary" data-bs-toggle="modal" data-bs-target="#modalDetail<?= $cleanNim; ?>" title="Lihat Profil">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                            <a href="<?= url('edit', ['nim' => $mhs['nim']]); ?>" class="btn btn-sm btn-light border text-warning" title="Edit Data">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <form action="<?= url('hapus', ['nim' => $mhs['nim']]); ?>" method="POST" onsubmit="return confirm('Hapus data mahasiswa <?= e($mhs['nama']); ?>?')" class="d-inline m-0">
-                                <input type="hidden" name="csrf_token" value="<?= generateCsrfToken(); ?>">
-                                <input type="hidden" name="nim" value="<?= e($mhs['nim']); ?>">
-                                <button type="submit" class="btn btn-sm btn-light border text-danger" title="Hapus Data">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- 3. PAGINATION & INFO -->
-    <div class="card-footer bg-white py-3 d-flex align-items-center justify-content-between flex-wrap gap-2 border-top">
-        <small class="text-muted">
-            Menampilkan <strong><?= count($daftar_mahasiswa); ?></strong> dari <strong><?= $total; ?></strong> total data
-        </small>
-        <?php if ($totalHalaman > 1): ?>
-        <nav aria-label="Navigasi Halaman">
-            <ul class="pagination pagination-sm mb-0">
-                <?php if ($page > 1): ?>
-                <li class="page-item">
-                    <a class="page-link" href="?<?= http_build_query(array_merge($_GET, ['page' => $page - 1])); ?>">
-                        &laquo;
+    <div class="page-actions">
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-download me-2"></i>Ekspor / Cetak
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                    <a class="dropdown-item" href="<?= e(url('exportCsv', $_GET)); ?>">
+                        <i class="bi bi-filetype-csv me-2 text-muted"></i>Unduh data (CSV)
                     </a>
                 </li>
-                <?php endif; ?>
-
-                <?php for ($i = max(1, $page - 2); $i <= min($totalHalaman, $page + 2); $i++): ?>
-                <li class="page-item <?= $i === $page ? 'active' : ''; ?>">
-                    <a class="page-link" href="?<?= http_build_query(array_merge($_GET, ['page' => $i])); ?>">
-                        <?= $i; ?>
+                <li>
+                    <a class="dropdown-item" href="<?= e(url('cetakLaporan', $_GET)); ?>" target="_blank" rel="noopener">
+                        <i class="bi bi-printer me-2 text-muted"></i>Cetak laporan resmi
                     </a>
                 </li>
-                <?php endfor; ?>
-
-                <?php if ($page < $totalHalaman): ?>
-                <li class="page-item">
-                    <a class="page-link" href="?<?= http_build_query(array_merge($_GET, ['page' => $page + 1])); ?>">
-                        &raquo;
-                    </a>
-                </li>
-                <?php endif; ?>
             </ul>
-        </nav>
-        <?php endif; ?>
+        </div>
+        <a href="<?= e(url('tambah')); ?>" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-2"></i>Tambah mahasiswa
+        </a>
     </div>
 </div>
 
-<!-- 4. MODALS (DILETAKKAN DI LUAR TABEL SECARA BENAR) -->
+<!-- Ringkasan -->
+<section class="kpis rise rise-1" aria-label="Ringkasan">
+    <div class="kpi">
+        <div class="kpi-label">Total mahasiswa</div>
+        <div class="kpi-figure"><?= $totalMhs; ?></div>
+        <div class="kpi-meta">Seluruh angkatan</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-label">Rata-rata IPK</div>
+        <div class="kpi-figure is-accent"><?= e($stats['avg_ipk'] ?? '0.00'); ?></div>
+        <div class="kpi-meta">Skala maksimum 4.00</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-label">Mahasiswa aktif</div>
+        <div class="kpi-figure"><?= $aktifMhs; ?></div>
+        <div class="kpi-meta"><?= $persenAktif; ?>% dari total</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-label">Cumlaude</div>
+        <div class="kpi-figure"><?= (int)($stats['cumlaude'] ?? 0); ?></div>
+        <div class="kpi-meta">IPK 3.50 ke atas</div>
+    </div>
+</section>
+
+<div class="dash rise rise-2">
+    <!-- Daftar mahasiswa -->
+    <section class="panel" aria-label="Daftar mahasiswa">
+        <form class="toolbar" method="GET" action="<?= e(url('index')); ?>">
+            <div class="search">
+                <i class="bi bi-search"></i>
+                <input type="text" name="q" class="form-control form-control-sm" placeholder="Cari nama atau NIM" aria-label="Cari nama atau NIM" value="<?= e($_GET['q'] ?? '') ?>">
+            </div>
+
+            <select name="jurusan" class="form-select form-select-sm" aria-label="Program studi">
+                <option value="">Semua prodi</option>
+                <?php
+                $jurusanList = [
+                    'Pendidikan Teknologi Informasi',
+                    'Pendidikan Ilmu Pengetahuan Alam',
+                    'Pendidikan Biologi',
+                    'Pendidikan Fisika',
+                    'Pendidikan Matematika'
+                ];
+                $selectedJurusan = $_GET['jurusan'] ?? '';
+                foreach ($jurusanList as $p):
+                ?>
+                <option value="<?= e($p); ?>" <?= ($selectedJurusan === $p) ? 'selected' : ''; ?>><?= e($p); ?></option>
+                <?php endforeach; ?>
+            </select>
+
+            <select name="status" class="form-select form-select-sm" aria-label="Status">
+                <option value="">Semua status</option>
+                <?php
+                $statusList = ['Aktif', 'Cuti', 'Lulus', 'DO'];
+                $selectedStatus = $_GET['status'] ?? '';
+                foreach ($statusList as $st):
+                ?>
+                <option value="<?= e($st); ?>" <?= ($selectedStatus === $st) ? 'selected' : ''; ?>><?= e($st); ?></option>
+                <?php endforeach; ?>
+            </select>
+
+            <select name="angkatan" class="form-select form-select-sm" aria-label="Angkatan">
+                <option value="">Semua angkatan</option>
+                <?php
+                $selectedAngkatan = (int)($_GET['angkatan'] ?? 0);
+                foreach ($angkatanList as $ang):
+                ?>
+                <option value="<?= (int)$ang; ?>" <?= ($selectedAngkatan === $ang) ? 'selected' : ''; ?>><?= (int)$ang; ?></option>
+                <?php endforeach; ?>
+            </select>
+
+            <button type="submit" class="btn btn-sm btn-primary">Terapkan</button>
+            <a href="<?= e(url('index')); ?>" class="btn btn-sm btn-outline-secondary" title="Reset filter" aria-label="Reset filter">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </a>
+        </form>
+
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Mahasiswa</th>
+                        <th>NIM</th>
+                        <th class="col-hide-sm">Program studi</th>
+                        <th>Status</th>
+                        <th class="col-end">IPK</th>
+                        <th class="col-end">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($daftar_mahasiswa)): ?>
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty">
+                                <?php if ($totalMhs === 0): ?>
+                                <p>Belum ada data mahasiswa</p>
+                                <a href="<?= e(url('tambah')); ?>" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-2"></i>Tambah mahasiswa pertama</a>
+                                <?php else: ?>
+                                <p>Tidak ada data yang cocok dengan pencarian atau filter</p>
+                                <a href="<?= e(url('index')); ?>" class="btn btn-sm btn-outline-secondary">Reset filter</a>
+                                <?php endif; ?>
+                            </div>
+                        </td>
+                    </tr>
+                    <?php else: ?>
+                    <?php foreach ($daftar_mahasiswa as $mhs):
+                        $cleanNim = preg_replace('/[^a-zA-Z0-9]/', '', $mhs['nim']);
+                        $st  = $mhs['status'] ?? 'Aktif';
+                        $ipk = (float)$mhs['ipk'];
+                        $adaFoto = !empty($mhs['foto']) && file_exists(__DIR__ . '/../../uploads/' . $mhs['foto']);
+                    ?>
+                    <tr>
+                        <td>
+                            <div class="person">
+                                <?php if ($adaFoto): ?>
+                                    <img src="<?= e($fotoUrl . $mhs['foto']); ?>" alt="Foto <?= e($mhs['nama']); ?>" class="avatar">
+                                <?php else: ?>
+                                    <span class="avatar"><?= e(inisialNama($mhs['nama'])); ?></span>
+                                <?php endif; ?>
+                                <div>
+                                    <b><?= e($mhs['nama']); ?></b>
+                                    <div class="meta"><?= ($mhs['jenis_kelamin'] ?? 'L') === 'L' ? 'L' : 'P'; ?> · <?= e($mhs['tempat_lahir']); ?>, <?= date('d M Y', strtotime($mhs['tanggal_lahir'])); ?></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="col-nim"><?= e($mhs['nim']); ?></td>
+                        <td class="col-hide-sm">
+                            <div><?= e($mhs['jurusan']); ?></div>
+                            <div class="meta">Angkatan <?= e($mhs['angkatan'] ?? 2024); ?> · <?= e($mhs['fakultas']); ?></div>
+                        </td>
+                        <td><span class="status <?= e(kelasStatus($st)); ?>"><?= e($st); ?></span></td>
+                        <td class="col-end ipk"><?= number_format($ipk, 2); ?></td>
+                        <td class="col-end">
+                            <div class="row-actions">
+                                <button type="button" class="icon-btn" data-bs-toggle="modal" data-bs-target="#modalDetail<?= e($cleanNim); ?>" title="Lihat profil" aria-label="Lihat profil <?= e($mhs['nama']); ?>">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <a href="<?= e(url('edit', ['nim' => $mhs['nim']])); ?>" class="icon-btn" title="Edit data" aria-label="Edit <?= e($mhs['nama']); ?>">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form action="<?= e(url('hapus', ['nim' => $mhs['nim']])); ?>" method="POST" onsubmit="return confirm('Hapus data mahasiswa <?= e($mhs['nama']); ?>?')" class="d-inline m-0">
+                                    <input type="hidden" name="csrf_token" value="<?= generateCsrfToken(); ?>">
+                                    <input type="hidden" name="nim" value="<?= e($mhs['nim']); ?>">
+                                    <button type="submit" class="icon-btn is-danger" title="Hapus data" aria-label="Hapus <?= e($mhs['nama']); ?>">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="panel-foot">
+            <span class="num">Menampilkan <?= count($daftar_mahasiswa); ?> dari <?= (int)$total; ?> data</span>
+            <?php if ($totalHalaman > 1): ?>
+            <nav aria-label="Navigasi halaman">
+                <ul class="pagination mb-0">
+                    <?php if ($page > 1): ?>
+                    <li class="page-item">
+                        <a class="page-link" href="?<?= e(http_build_query(array_merge($_GET, ['page' => $page - 1]))); ?>" aria-label="Sebelumnya"><i class="bi bi-chevron-left"></i></a>
+                    </li>
+                    <?php endif; ?>
+
+                    <?php for ($i = max(1, $page - 2); $i <= min($totalHalaman, $page + 2); $i++): ?>
+                    <li class="page-item <?= $i === $page ? 'active' : ''; ?>">
+                        <a class="page-link" href="?<?= e(http_build_query(array_merge($_GET, ['page' => $i]))); ?>"><?= $i; ?></a>
+                    </li>
+                    <?php endfor; ?>
+
+                    <?php if ($page < $totalHalaman): ?>
+                    <li class="page-item">
+                        <a class="page-link" href="?<?= e(http_build_query(array_merge($_GET, ['page' => $page + 1]))); ?>" aria-label="Berikutnya"><i class="bi bi-chevron-right"></i></a>
+                    </li>
+                    <?php endif; ?>
+                </ul>
+            </nav>
+            <?php endif; ?>
+        </div>
+    </section>
+
+    <!-- Sebaran program studi -->
+    <aside class="panel" aria-label="Sebaran program studi">
+        <div class="panel-head">
+            <h2>Sebaran program studi</h2>
+            <p>Jumlah mahasiswa per prodi</p>
+        </div>
+        <?php if (empty($sebaranProdi)): ?>
+        <div class="rank-empty">Belum ada data</div>
+        <?php else: ?>
+        <div class="rank">
+            <?php $urut = 0; foreach ($sebaranProdi as $namaProdi => $jumlah): ?>
+            <div class="rank-row <?= $urut === 0 ? 'is-top' : ''; ?>">
+                <div class="rank-top"><span><?= e($namaProdi); ?></span><span><?= (int)$jumlah; ?></span></div>
+                <div class="rank-bar"><i style="width: <?= $maksProdi > 0 ? round($jumlah / $maksProdi * 100) : 0; ?>%"></i></div>
+            </div>
+            <?php $urut++; endforeach; ?>
+        </div>
+        <?php endif; ?>
+    </aside>
+</div>
+
+<!-- Detail mahasiswa (modal di luar tabel) -->
 <?php if (!empty($daftar_mahasiswa)): ?>
 <?php foreach ($daftar_mahasiswa as $mhs):
     $cleanNim = preg_replace('/[^a-zA-Z0-9]/', '', $mhs['nim']);
     $ipk = (float)$mhs['ipk'];
-    $st = $mhs['status'] ?? 'Aktif';
+    $st  = $mhs['status'] ?? 'Aktif';
+    $adaFoto = !empty($mhs['foto']) && file_exists(__DIR__ . '/../../uploads/' . $mhs['foto']);
 ?>
-<div class="modal fade" id="modalDetail<?= $cleanNim; ?>" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="modalDetail<?= e($cleanNim); ?>" tabindex="-1" aria-labelledby="judulDetail<?= e($cleanNim); ?>" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-primary text-white py-3">
-                <h6 class="modal-title fw-semibold">
-                    <i class="bi bi-person-badge me-2"></i>Profil Mahasiswa
-                </h6>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-6 fw-medium" id="judulDetail<?= e($cleanNim); ?>">Profil mahasiswa</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
             <div class="modal-body p-4">
-                <div class="text-center mb-4">
-                    <?php if (!empty($mhs['foto']) && file_exists(__DIR__ . '/../../uploads/' . $mhs['foto'])): ?>
-                        <img src="/pertemuan12/uploads/<?= e($mhs['foto']); ?>" alt="Foto" class="rounded border shadow-sm mb-2" style="width: 90px; height: 115px; object-fit: cover;">
+                <div class="detail-head">
+                    <?php if ($adaFoto): ?>
+                        <img src="<?= e($fotoUrl . $mhs['foto']); ?>" alt="Foto <?= e($mhs['nama']); ?>" class="photo">
                     <?php else: ?>
-                        <div class="avatar-placeholder mx-auto mb-2" style="width: 72px; height: 72px; font-size: 1.75rem;">
-                            <?= strtoupper(substr($mhs['nama'], 0, 1)); ?>
-                        </div>
+                        <span class="avatar"><?= e(inisialNama($mhs['nama'])); ?></span>
                     <?php endif; ?>
-                    <h5 class="fw-bold mb-0 text-dark"><?= e($mhs['nama']); ?></h5>
-                    <div class="text-muted small">NIM: <span class="font-monospace fw-semibold"><?= e($mhs['nim']); ?></span> &middot; Angkatan <?= e($mhs['angkatan'] ?? 2024); ?></div>
-                </div>
-
-                <div class="bg-light p-3 rounded-3 mb-3">
-                    <div class="row g-2 small">
-                        <div class="col-5 text-muted">Jenis Kelamin</div>
-                        <div class="col-7 fw-medium">: <?= ($mhs['jenis_kelamin'] ?? 'L') === 'L' ? 'Laki-laki' : 'Perempuan'; ?></div>
-
-                        <div class="col-5 text-muted">Tempat, Tanggal Lahir</div>
-                        <div class="col-7 fw-medium">: <?= e($mhs['tempat_lahir']); ?>, <?= date('d F Y', strtotime($mhs['tanggal_lahir'])); ?></div>
-
-                        <div class="col-5 text-muted">Program Studi</div>
-                        <div class="col-7 fw-medium">: <?= e($mhs['jurusan']); ?></div>
-
-                        <div class="col-5 text-muted">Fakultas</div>
-                        <div class="col-7 fw-medium">: <?= e($mhs['fakultas']); ?></div>
-
-                        <div class="col-5 text-muted">Status Kuliah</div>
-                        <div class="col-7 fw-medium">: <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25"><?= e($st); ?></span></div>
-
-                        <div class="col-5 text-muted">IPK Kumulatif</div>
-                        <div class="col-7 fw-medium">: <span class="badge bg-primary"><?= number_format($ipk, 2); ?></span> <?= $ipk >= 3.50 ? '<span class="text-success fw-medium small">(Cumlaude)</span>' : ''; ?></div>
+                    <div>
+                        <h3 class="detail-name"><?= e($mhs['nama']); ?></h3>
+                        <div class="meta num">NIM <?= e($mhs['nim']); ?> · Angkatan <?= e($mhs['angkatan'] ?? 2024); ?></div>
                     </div>
                 </div>
 
-                <div class="small">
-                    <div class="d-flex justify-content-between py-1 border-bottom">
-                        <span class="text-muted"><i class="bi bi-envelope me-1"></i>Email</span>
-                        <span><?= !empty($mhs['email']) ? '<a href="mailto:' . e($mhs['email']) . '" class="text-decoration-none">' . e($mhs['email']) . '</a>' : '<span class="text-muted">-</span>'; ?></span>
-                    </div>
-                    <div class="d-flex justify-content-between py-1">
-                        <span class="text-muted"><i class="bi bi-whatsapp me-1 text-success"></i>WhatsApp</span>
-                        <span><?= !empty($mhs['no_hp']) ? '<a href="https://wa.me/' . preg_replace('/[^0-9]/', '', $mhs['no_hp']) . '" target="_blank" class="text-decoration-none text-success fw-medium">' . e($mhs['no_hp']) . '</a>' : '<span class="text-muted">-</span>'; ?></span>
-                    </div>
-                </div>
+                <dl class="detail-list">
+                    <dt>Jenis kelamin</dt>
+                    <dd><?= ($mhs['jenis_kelamin'] ?? 'L') === 'L' ? 'Laki-laki' : 'Perempuan'; ?></dd>
+                    <dt>Tempat, tanggal lahir</dt>
+                    <dd><?= e($mhs['tempat_lahir']); ?>, <?= date('d F Y', strtotime($mhs['tanggal_lahir'])); ?></dd>
+                    <dt>Program studi</dt>
+                    <dd><?= e($mhs['jurusan']); ?></dd>
+                    <dt>Fakultas</dt>
+                    <dd><?= e($mhs['fakultas']); ?></dd>
+                    <dt>Status kuliah</dt>
+                    <dd><span class="status <?= e(kelasStatus($st)); ?>"><?= e($st); ?></span></dd>
+                    <dt>IPK kumulatif</dt>
+                    <dd><?= number_format($ipk, 2); ?><?= $ipk >= 3.50 ? ' <span class="text-muted">· Cumlaude</span>' : ''; ?></dd>
+                    <dt>Email</dt>
+                    <dd><?= !empty($mhs['email']) ? '<a href="mailto:' . e($mhs['email']) . '">' . e($mhs['email']) . '</a>' : '<span class="text-muted">Belum diisi</span>'; ?></dd>
+                    <dt>WhatsApp</dt>
+                    <dd><?= !empty($mhs['no_hp']) ? '<a href="https://wa.me/' . preg_replace('/[^0-9]/', '', $mhs['no_hp']) . '" target="_blank" rel="noopener">' . e($mhs['no_hp']) . '</a>' : '<span class="text-muted">Belum diisi</span>'; ?></dd>
+                </dl>
             </div>
-            <div class="modal-footer bg-light py-2">
-                <a href="<?= url('cetakKtm', ['nim' => $mhs['nim']]); ?>" target="_blank" class="btn btn-sm btn-primary">
-                    <i class="bi bi-person-vcard me-1"></i>Cetak Kartu Mahasiswa (KTM)
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Tutup</button>
+                <a href="<?= e(url('cetakKtm', ['nim' => $mhs['nim']])); ?>" target="_blank" rel="noopener" class="btn btn-sm btn-primary">
+                    <i class="bi bi-person-vcard me-2"></i>Cetak KTM
                 </a>
-                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Tutup</button>
             </div>
         </div>
     </div>

@@ -1,12 +1,22 @@
-</div><!-- end container -->
+            </div><!-- end main-inner -->
+        </main>
+    </div><!-- end shell -->
 
-<footer class="bg-white border-top py-3 mt-auto">
-    <div class="container text-center text-muted small">
-        <i class="bi bi-mortarboard me-1"></i>
-        <?= date('Y') ?> &middot; Sistem Informasi Akademik &middot; Pendidikan Teknologi Informasi &middot; FKIP Unsulbar
-    </div>
-</footer>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function () {
+            var side = document.getElementById('side');
+            var scrim = document.getElementById('scrim');
+            var tombol = document.getElementById('sideToggle');
+            if (!side || !tombol) return;
+            function atur(buka) {
+                side.classList.toggle('is-open', buka);
+                scrim.classList.toggle('is-open', buka);
+                tombol.setAttribute('aria-expanded', buka ? 'true' : 'false');
+            }
+            tombol.addEventListener('click', function () { atur(!side.classList.contains('is-open')); });
+            scrim.addEventListener('click', function () { atur(false); });
+        })();
+    </script>
 </body>
 </html>
