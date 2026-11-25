@@ -11,7 +11,52 @@ require_once __DIR__ . '/../../config/helper.php';
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --card: #ffffff;
+            --raised: #f1efeb;
+            --hair: rgba(31, 27, 22, 0.09);
+            --line: rgba(31, 27, 22, 0.16);
+            --ink: #1f1b16;
+            --ink-2: #5e554a;
+            --accent: #0f6b66;
+            --accent-hover: #0b5753;
+            --ease: cubic-bezier(0.22, 1, 0.36, 1);
+            --bs-primary: #0f6b66;
+            --bs-primary-rgb: 15, 107, 102;
+        }
         body { font-family: 'Inter', sans-serif; background: #fff; color: #212529; font-size: 11pt; }
+        .no-print.bg-light { background-color: #f6f5f2 !important; border-color: var(--hair) !important; border-radius: 12px !important; }
+        .btn {
+            --bs-btn-border-radius: 10px;
+            --bs-btn-font-weight: 500;
+            line-height: 20px;
+            transition-property: background-color, border-color, color, transform;
+            transition-duration: 160ms;
+            transition-timing-function: var(--ease);
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-sm { --bs-btn-padding-y: 5px; --bs-btn-padding-x: 12px; --bs-btn-font-size: 14px; --bs-btn-border-radius: 10px; }
+        .btn-primary {
+            --bs-btn-bg: var(--accent);
+            --bs-btn-border-color: var(--accent);
+            --bs-btn-hover-bg: var(--accent-hover);
+            --bs-btn-hover-border-color: var(--accent-hover);
+            --bs-btn-active-bg: var(--accent-hover);
+            --bs-btn-active-border-color: var(--accent-hover);
+            --bs-btn-disabled-bg: var(--accent);
+            --bs-btn-disabled-border-color: var(--accent);
+        }
+        .btn-outline-secondary {
+            --bs-btn-color: var(--ink);
+            --bs-btn-bg: var(--card);
+            --bs-btn-border-color: var(--line);
+            --bs-btn-hover-color: var(--ink);
+            --bs-btn-hover-bg: var(--raised);
+            --bs-btn-hover-border-color: var(--line);
+            --bs-btn-active-color: var(--ink);
+            --bs-btn-active-bg: var(--raised);
+            --bs-btn-active-border-color: var(--line);
+        }
         .kop-surat { border-bottom: 3px double #000; padding-bottom: 12px; margin-bottom: 24px; text-align: center; }
         .kop-surat h4 { margin: 0; font-weight: 700; font-size: 14pt; text-transform: uppercase; letter-spacing: 0.5px; }
         .kop-surat h5 { margin: 2px 0; font-weight: 600; font-size: 12pt; text-transform: uppercase; }

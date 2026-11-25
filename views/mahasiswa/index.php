@@ -4,6 +4,13 @@ require_once __DIR__ . '/../layout/header.php';
 
 $pesan = ambilPesan();
 
+$filterParams = array_filter([
+    'q'        => trim($_GET['q'] ?? ''),
+    'jurusan'  => trim($_GET['jurusan'] ?? ''),
+    'status'   => trim($_GET['status'] ?? ''),
+    'angkatan' => trim($_GET['angkatan'] ?? ''),
+], static fn($v) => $v !== '');
+
 $fotoUrl  = rtrim(BASE_URL, '/') . '/uploads/';
 $totalMhs = (int)($stats['total'] ?? 0);
 $aktifMhs = (int)($stats['aktif'] ?? 0);
@@ -42,12 +49,12 @@ function kelasStatus($st) {
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
                 <li>
-                    <a class="dropdown-item" href="<?= e(url('exportCsv', $_GET)); ?>">
+                    <a class="dropdown-item" href="<?= e(url('exportCsv', $filterParams)); ?>">
                         <i class="bi bi-filetype-csv me-2 text-muted"></i>Unduh data (CSV)
                     </a>
                 </li>
                 <li>
-                    <a class="dropdown-item" href="<?= e(url('cetakLaporan', $_GET)); ?>" target="_blank" rel="noopener">
+                    <a class="dropdown-item" href="<?= e(url('cetakLaporan', $filterParams)); ?>" target="_blank" rel="noopener">
                         <i class="bi bi-printer me-2 text-muted"></i>Cetak laporan resmi
                     </a>
                 </li>
@@ -199,7 +206,7 @@ function kelasStatus($st) {
                                 <a href="<?= e(url('edit', ['nim' => $mhs['nim']])); ?>" class="icon-btn" title="Edit data" aria-label="Edit <?= e($mhs['nama']); ?>">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <form action="<?= e(url('hapus', ['nim' => $mhs['nim']])); ?>" method="POST" onsubmit="return confirm('Hapus data mahasiswa <?= e($mhs['nama']); ?>?')" class="d-inline m-0">
+                                <form action="<?= e(url('hapus', ['nim' => $mhs['nim']])); ?>" method="POST" onsubmit="return confirm('Hapus data mahasiswa <?= e(addslashes($mhs['nama'])); ?>?')" class="d-inline m-0">
                                     <input type="hidden" name="csrf_token" value="<?= generateCsrfToken(); ?>">
                                     <input type="hidden" name="nim" value="<?= e($mhs['nim']); ?>">
                                     <button type="submit" class="icon-btn is-danger" title="Hapus data" aria-label="Hapus <?= e($mhs['nama']); ?>">
@@ -222,19 +229,19 @@ function kelasStatus($st) {
                 <ul class="pagination mb-0">
                     <?php if ($page > 1): ?>
                     <li class="page-item">
-                        <a class="page-link" href="?<?= e(http_build_query(array_merge($_GET, ['page' => $page - 1]))); ?>" aria-label="Sebelumnya"><i class="bi bi-chevron-left"></i></a>
+                        <a class="page-link" href="<?= e(url('index', array_merge($filterParams, ['page' => $page - 1]))); ?>" aria-label="Sebelumnya"><i class="bi bi-chevron-left"></i></a>
                     </li>
                     <?php endif; ?>
 
                     <?php for ($i = max(1, $page - 2); $i <= min($totalHalaman, $page + 2); $i++): ?>
                     <li class="page-item <?= $i === $page ? 'active' : ''; ?>">
-                        <a class="page-link" href="?<?= e(http_build_query(array_merge($_GET, ['page' => $i]))); ?>"><?= $i; ?></a>
+                        <a class="page-link" href="<?= e(url('index', array_merge($filterParams, ['page' => $i]))); ?>"><?= $i; ?></a>
                     </li>
                     <?php endfor; ?>
 
                     <?php if ($page < $totalHalaman): ?>
                     <li class="page-item">
-                        <a class="page-link" href="?<?= e(http_build_query(array_merge($_GET, ['page' => $page + 1]))); ?>" aria-label="Berikutnya"><i class="bi bi-chevron-right"></i></a>
+                        <a class="page-link" href="<?= e(url('index', array_merge($filterParams, ['page' => $page + 1]))); ?>" aria-label="Berikutnya"><i class="bi bi-chevron-right"></i></a>
                     </li>
                     <?php endif; ?>
                 </ul>
@@ -308,7 +315,11 @@ function kelasStatus($st) {
                     <dt>Email</dt>
                     <dd><?= !empty($mhs['email']) ? '<a href="mailto:' . e($mhs['email']) . '">' . e($mhs['email']) . '</a>' : '<span class="text-muted">Belum diisi</span>'; ?></dd>
                     <dt>WhatsApp</dt>
-                    <dd><?= !empty($mhs['no_hp']) ? '<a href="https://wa.me/' . preg_replace('/[^0-9]/', '', $mhs['no_hp']) . '" target="_blank" rel="noopener">' . e($mhs['no_hp']) . '</a>' : '<span class="text-muted">Belum diisi</span>'; ?></dd>
+                    <dd><?php
+                        $waDigits = preg_replace('/[^0-9]/', '', (string)($mhs['no_hp'] ?? ''));
+                        $waNumber = preg_replace('/^0/', '62', $waDigits);
+                        echo !empty($mhs['no_hp']) ? '<a href="https://wa.me/' . e($waNumber) . '" target="_blank" rel="noopener">' . e($mhs['no_hp']) . '</a>' : '<span class="text-muted">Belum diisi</span>';
+                    ?></dd>
                 </dl>
             </div>
             <div class="modal-footer">

@@ -11,6 +11,10 @@ class AuthController {
     }
 
     public function register() {
+        if (sudahLogin()) {
+            header("Location: " . url('index'));
+            exit;
+        }
         require_once __DIR__ . '/../views/auth/register.php';
     }
 
@@ -29,18 +33,20 @@ class AuthController {
         $error = "";
 
         if (strlen($nama) < 3) {
-            $error .= "Nama minimal 3 Karakter. ";
+            $error .= "Nama minimal 3 karakter. ";
         }
 
         if (strlen($username) < 4) {
             $error .= "Username minimal 4 karakter. ";
+        } elseif (preg_match('/\s/', $username)) {
+            $error .= "Username tidak boleh mengandung spasi. ";
         }
 
         if (strlen($password) < 8) {
             $error .= "Password minimal 8 karakter. ";
         }
 
-        if ($this->model->getByUsername($username)) {
+        if ($username !== '' && $this->model->getByUsername($username)) {
             $error .= "Username sudah dipakai, pilih yang lain. ";
         }
 
@@ -78,6 +84,8 @@ class AuthController {
             header("Location: " . url('login'));
             exit;
         }
+
+        verifyCsrfToken($_POST['csrf_token'] ?? '');
 
         $username = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';

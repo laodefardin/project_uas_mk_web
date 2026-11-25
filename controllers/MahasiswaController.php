@@ -35,9 +35,15 @@ class MahasiswaController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             verifyCsrfToken($_POST['csrf_token'] ?? '');
 
-            $nim  = trim($_POST['nim'] ?? '');
-            $nama = trim($_POST['nama'] ?? '');
-            $ipk  = $_POST['ipk'] ?? '';
+            $nim           = trim($_POST['nim'] ?? '');
+            $nama          = trim($_POST['nama'] ?? '');
+            $tempat_lahir  = trim($_POST['tempat_lahir'] ?? '');
+            $tanggal_lahir = trim($_POST['tanggal_lahir'] ?? '');
+            $fakultas      = trim($_POST['fakultas'] ?? '');
+            $jurusan       = trim($_POST['jurusan'] ?? '');
+            $angkatan      = (int)($_POST['angkatan'] ?? 0);
+            $email         = trim($_POST['email'] ?? '');
+            $ipk           = $_POST['ipk'] ?? '';
 
             if (!preg_match('/^\d{8}$/', $nim)) {
                 setPesan('gagal', 'NIM harus tepat 8 digit angka.');
@@ -46,7 +52,25 @@ class MahasiswaController {
             }
 
             if ($this->model->getByNim($nim)) {
-                setPesan('gagal', 'Mahasiswa dengan NIM ' . htmlspecialchars($nim) . ' sudah terdaftar.');
+                setPesan('gagal', 'Mahasiswa dengan NIM ' . $nim . ' sudah terdaftar.');
+                header("Location: " . url('tambah'));
+                exit;
+            }
+
+            if ($nama === '' || $tempat_lahir === '' || $tanggal_lahir === '' || $fakultas === '' || $jurusan === '') {
+                setPesan('gagal', 'Semua kolom bertanda wajib (*) harus diisi.');
+                header("Location: " . url('tambah'));
+                exit;
+            }
+
+            if ($angkatan < 2000 || $angkatan > 2100) {
+                setPesan('gagal', 'Tahun angkatan tidak valid.');
+                header("Location: " . url('tambah'));
+                exit;
+            }
+
+            if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                setPesan('gagal', 'Format email tidak valid.');
                 header("Location: " . url('tambah'));
                 exit;
             }
@@ -76,6 +100,12 @@ class MahasiswaController {
                 header("Location: " . url('index'));
                 exit;
             } else {
+                if ($fotoNama !== null) {
+                    $newPath = __DIR__ . '/../uploads/' . $fotoNama;
+                    if (file_exists($newPath) && is_file($newPath)) {
+                        @unlink($newPath);
+                    }
+                }
                 setPesan('gagal', 'Data mahasiswa gagal disimpan. Periksa kembali isian Anda.');
                 header("Location: " . url('tambah'));
                 exit;
@@ -102,14 +132,38 @@ class MahasiswaController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             verifyCsrfToken($_POST['csrf_token'] ?? '');
 
-            $nim  = trim($_POST['nim'] ?? '');
-            $nama = trim($_POST['nama'] ?? '');
-            $ipk  = $_POST['ipk'] ?? '';
+            $nim           = trim($_POST['nim'] ?? '');
+            $nama          = trim($_POST['nama'] ?? '');
+            $tempat_lahir  = trim($_POST['tempat_lahir'] ?? '');
+            $tanggal_lahir = trim($_POST['tanggal_lahir'] ?? '');
+            $fakultas      = trim($_POST['fakultas'] ?? '');
+            $jurusan       = trim($_POST['jurusan'] ?? '');
+            $angkatan      = (int)($_POST['angkatan'] ?? 0);
+            $email         = trim($_POST['email'] ?? '');
+            $ipk           = $_POST['ipk'] ?? '';
 
             $mahasiswaLama = $this->model->getByNim($nim);
             if (!$mahasiswaLama) {
                 setPesan('gagal', 'Data mahasiswa tidak ditemukan.');
                 header("Location: " . url('index'));
+                exit;
+            }
+
+            if ($nama === '' || $tempat_lahir === '' || $tanggal_lahir === '' || $fakultas === '' || $jurusan === '') {
+                setPesan('gagal', 'Semua kolom bertanda wajib (*) harus diisi.');
+                header("Location: " . url('edit', ['nim' => $nim]));
+                exit;
+            }
+
+            if ($angkatan < 2000 || $angkatan > 2100) {
+                setPesan('gagal', 'Tahun angkatan tidak valid.');
+                header("Location: " . url('edit', ['nim' => $nim]));
+                exit;
+            }
+
+            if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                setPesan('gagal', 'Format email tidak valid.');
+                header("Location: " . url('edit', ['nim' => $nim]));
                 exit;
             }
 
@@ -129,21 +183,26 @@ class MahasiswaController {
                     exit;
                 }
                 $fotoNama = $uploadRes['nama_file'];
-
-                // Hapus foto lama jika ada
-                if (!empty($mahasiswaLama['foto'])) {
-                    $oldPath = __DIR__ . '/../uploads/' . $mahasiswaLama['foto'];
-                    if (file_exists($oldPath) && is_file($oldPath)) {
-                        @unlink($oldPath);
-                    }
-                }
             }
 
             $hasil = $this->model->ubah($nim, $_POST, $fotoNama);
 
             if ($hasil) {
+                // Hapus foto lama hanya setelah pembaruan database berhasil
+                if ($fotoNama !== null && !empty($mahasiswaLama['foto'])) {
+                    $oldPath = __DIR__ . '/../uploads/' . $mahasiswaLama['foto'];
+                    if (file_exists($oldPath) && is_file($oldPath)) {
+                        @unlink($oldPath);
+                    }
+                }
                 setPesan('sukses', "Data Mahasiswa {$nama} berhasil diperbarui.");
             } else {
+                if ($fotoNama !== null) {
+                    $newPath = __DIR__ . '/../uploads/' . $fotoNama;
+                    if (file_exists($newPath) && is_file($newPath)) {
+                        @unlink($newPath);
+                    }
+                }
                 setPesan('gagal', 'Gagal memperbarui data mahasiswa.');
             }
             header("Location: " . url('index'));
@@ -154,13 +213,15 @@ class MahasiswaController {
     }
 
     public function hapus() {
-        $nim = $_POST['nim'] ?? $_GET['nim'] ?? '';
-
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            verifyCsrfToken($_POST['csrf_token'] ?? '');
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header("Location: " . url('index'));
+            exit;
         }
 
-        if (!empty($nim)) {
+        verifyCsrfToken($_POST['csrf_token'] ?? '');
+        $nim = trim($_POST['nim'] ?? $_GET['nim'] ?? '');
+
+        if ($nim !== '') {
             if ($this->model->hapus($nim)) {
                 setPesan('sukses', 'Data Mahasiswa berhasil dihapus.');
             } else {
@@ -223,7 +284,7 @@ class MahasiswaController {
 
         $total = $this->model->countAll($keyword, $jurusan, $status, $angkatan);
         $daftar_mahasiswa = $this->model->getPage(1, max(1, $total), $keyword, $jurusan, $status, $angkatan);
-        $stats = $this->model->getStats();
+        $stats = $this->model->getStats($keyword, $jurusan, $status, $angkatan);
 
         require_once __DIR__ . '/../views/mahasiswa/cetak_laporan.php';
     }
@@ -245,6 +306,13 @@ class MahasiswaController {
         $allowedMimes = ['image/jpeg', 'image/png', 'image/webp'];
         $allowedExts  = ['jpg', 'jpeg', 'png', 'webp'];
         $maxSize      = 2 * 1024 * 1024; // 2MB
+
+        if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+            if (in_array($file['error'], [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true)) {
+                return ['error' => true, 'pesan' => 'Ukuran foto maksimal 2 MB.'];
+            }
+            return ['error' => true, 'pesan' => 'Gagal mengunggah foto. Silakan coba lagi.'];
+        }
 
         if ($file['size'] > $maxSize) {
             return ['error' => true, 'pesan' => 'Ukuran foto maksimal 2 MB.'];

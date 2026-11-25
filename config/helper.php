@@ -4,10 +4,11 @@ function e($teks){
     return htmlspecialchars((string) $teks, ENT_QUOTES, 'UTF-8');
 }
 
-define('BASE_URL', '/pertemuan12');
+define('BASE_URL', '/pertemuan12/project_uas_mk_web');
 
 function url($act = 'index', $tambahan = []) {
     $dasar = rtrim(BASE_URL, '/');
+    unset($tambahan['act']);
 
     // Aksi edit, hapus, dan cetakKtm memakai bentuk clean URL: /edit/24010001
     if (in_array($act, ['edit', 'hapus', 'cetakKtm']) && isset($tambahan['nim'])) {

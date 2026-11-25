@@ -1,7 +1,7 @@
 RewriteEngine On
 
 # Sesuaikan dengan nama folder proyek kalian di htdocs
-RewriteBase /pertemuan12/
+RewriteBase /pertemuan12/project_uas_mk_web/
 
 # Jangan ganggu berkas dan folder yang benar-benar ada (gambar di uploads, css, js)
 RewriteCond %{REQUEST_FILENAME} !-f

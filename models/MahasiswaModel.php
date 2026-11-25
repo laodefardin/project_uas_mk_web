@@ -21,14 +21,16 @@ class MahasiswaModel {
         return $daftar;
     }
 
-    public function getStats() {
+    public function getStats($keyword = '', $jurusan = '', $status = '', $angkatan = '') {
         $stats = [
             'total' => 0,
-            'avg_ipk' => 0.00,
+            'avg_ipk' => '0.00',
             'aktif' => 0,
             'cumlaude' => 0,
             'prodi' => []
         ];
+
+        $filter = $this->buildWhereClause($keyword, $jurusan, $status, $angkatan);
 
         // Total, Rata-rata IPK, Mahasiswa Aktif, Cumlaude
         $query = "SELECT 
@@ -36,21 +38,53 @@ class MahasiswaModel {
                     COALESCE(AVG(ipk), 0) as avg_ipk,
                     SUM(CASE WHEN status = 'Aktif' THEN 1 ELSE 0 END) as aktif,
                     SUM(CASE WHEN ipk >= 3.50 THEN 1 ELSE 0 END) as cumlaude
-                  FROM mahasiswa";
-        $result = mysqli_query($this->db, $query);
-        if ($result && $row = mysqli_fetch_assoc($result)) {
-            $stats['total'] = (int)$row['total'];
-            $stats['avg_ipk'] = number_format((float)$row['avg_ipk'], 2);
-            $stats['aktif'] = (int)$row['aktif'];
-            $stats['cumlaude'] = (int)$row['cumlaude'];
+                  FROM mahasiswa" . $filter['clause'];
+
+        if (empty($filter['params'])) {
+            $result = mysqli_query($this->db, $query);
+            if ($result && $row = mysqli_fetch_assoc($result)) {
+                $stats['total'] = (int)$row['total'];
+                $stats['avg_ipk'] = number_format((float)$row['avg_ipk'], 2);
+                $stats['aktif'] = (int)$row['aktif'];
+                $stats['cumlaude'] = (int)$row['cumlaude'];
+            }
+        } else {
+            $stmt = mysqli_prepare($this->db, $query);
+            if ($stmt) {
+                mysqli_stmt_bind_param($stmt, $filter['types'], ...$filter['params']);
+                mysqli_stmt_execute($stmt);
+                $result = mysqli_stmt_get_result($stmt);
+                if ($result && $row = mysqli_fetch_assoc($result)) {
+                    $stats['total'] = (int)$row['total'];
+                    $stats['avg_ipk'] = number_format((float)$row['avg_ipk'], 2);
+                    $stats['aktif'] = (int)$row['aktif'];
+                    $stats['cumlaude'] = (int)$row['cumlaude'];
+                }
+                mysqli_stmt_close($stmt);
+            }
         }
 
         // Sebaran per Jurusan / Prodi
-        $qProdi = "SELECT jurusan, COUNT(*) as jumlah FROM mahasiswa GROUP BY jurusan";
-        $resProdi = mysqli_query($this->db, $qProdi);
-        if ($resProdi) {
-            while ($rowP = mysqli_fetch_assoc($resProdi)) {
-                $stats['prodi'][$rowP['jurusan']] = (int)$rowP['jumlah'];
+        $qProdi = "SELECT jurusan, COUNT(*) as jumlah FROM mahasiswa" . $filter['clause'] . " GROUP BY jurusan";
+        if (empty($filter['params'])) {
+            $resProdi = mysqli_query($this->db, $qProdi);
+            if ($resProdi) {
+                while ($rowP = mysqli_fetch_assoc($resProdi)) {
+                    $stats['prodi'][$rowP['jurusan']] = (int)$rowP['jumlah'];
+                }
+            }
+        } else {
+            $stmtProdi = mysqli_prepare($this->db, $qProdi);
+            if ($stmtProdi) {
+                mysqli_stmt_bind_param($stmtProdi, $filter['types'], ...$filter['params']);
+                mysqli_stmt_execute($stmtProdi);
+                $resProdi = mysqli_stmt_get_result($stmtProdi);
+                if ($resProdi) {
+                    while ($rowP = mysqli_fetch_assoc($resProdi)) {
+                        $stats['prodi'][$rowP['jurusan']] = (int)$rowP['jumlah'];
+                    }
+                }
+                mysqli_stmt_close($stmtProdi);
             }
         }
 
@@ -114,6 +148,9 @@ class MahasiswaModel {
 
         if (empty($filter['params'])) {
             $result = mysqli_query($this->db, $query);
+            if (!$result) {
+                return 0;
+            }
             $row = mysqli_fetch_assoc($result);
             return (int)($row['total'] ?? 0);
         }
@@ -126,7 +163,7 @@ class MahasiswaModel {
         mysqli_stmt_bind_param($stmt, $filter['types'], ...$filter['params']);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
-        $row = mysqli_fetch_assoc($result);
+        $row = $result ? mysqli_fetch_assoc($result) : null;
         mysqli_stmt_close($stmt);
 
         return (int)($row['total'] ?? 0);
@@ -152,8 +189,10 @@ class MahasiswaModel {
         $result = mysqli_stmt_get_result($stmt);
 
         $daftar = [];
-        while ($baris = mysqli_fetch_assoc($result)) {
-            $daftar[] = $baris;
+        if ($result) {
+            while ($baris = mysqli_fetch_assoc($result)) {
+                $daftar[] = $baris;
+            }
         }
         mysqli_stmt_close($stmt);
         return $daftar;
@@ -171,25 +210,25 @@ class MahasiswaModel {
         mysqli_stmt_execute($stmt);
 
         $result = mysqli_stmt_get_result($stmt);
-        $data = mysqli_fetch_assoc($result);
+        $data = $result ? mysqli_fetch_assoc($result) : null;
 
         mysqli_stmt_close($stmt);
         return $data;
     }
 
     public function tambah($data, $fotoNama = null) {
-        $nim            = trim($data['nim']);
-        $nama           = trim($data['nama']);
-        $jenis_kelamin  = in_array($data['jenis_kelamin'] ?? 'L', ['L', 'P']) ? $data['jenis_kelamin'] : 'L';
-        $tempat_lahir   = trim($data['tempat_lahir']);
-        $tanggal_lahir  = $data['tanggal_lahir'];
-        $fakultas       = trim($data['fakultas']);
-        $jurusan        = trim($data['jurusan']);
+        $nim            = trim($data['nim'] ?? '');
+        $nama           = trim($data['nama'] ?? '');
+        $jenis_kelamin  = in_array($data['jenis_kelamin'] ?? 'L', ['L', 'P'], true) ? $data['jenis_kelamin'] : 'L';
+        $tempat_lahir   = trim($data['tempat_lahir'] ?? '');
+        $tanggal_lahir  = trim($data['tanggal_lahir'] ?? '');
+        $fakultas       = trim($data['fakultas'] ?? '');
+        $jurusan        = trim($data['jurusan'] ?? '');
         $angkatan       = (int)($data['angkatan'] ?? date('Y'));
-        $status         = in_array($data['status'] ?? 'Aktif', ['Aktif', 'Cuti', 'Lulus', 'DO']) ? $data['status'] : 'Aktif';
+        $status         = in_array($data['status'] ?? 'Aktif', ['Aktif', 'Cuti', 'Lulus', 'DO'], true) ? $data['status'] : 'Aktif';
         $email          = trim($data['email'] ?? '');
         $no_hp          = trim($data['no_hp'] ?? '');
-        $ipk            = (float)$data['ipk'];
+        $ipk            = (float)($data['ipk'] ?? 0);
 
         $query = "INSERT INTO mahasiswa 
                   (nim, nama, jenis_kelamin, tempat_lahir, tanggal_lahir, fakultas, jurusan, angkatan, status, email, no_hp, foto, ipk) 
@@ -223,17 +262,17 @@ class MahasiswaModel {
     }
 
     public function ubah($nim, $data, $fotoNama = null) {
-        $nama           = trim($data['nama']);
-        $jenis_kelamin  = in_array($data['jenis_kelamin'] ?? 'L', ['L', 'P']) ? $data['jenis_kelamin'] : 'L';
-        $tempat_lahir   = trim($data['tempat_lahir']);
-        $tanggal_lahir  = $data['tanggal_lahir'];
-        $fakultas       = trim($data['fakultas']);
-        $jurusan        = trim($data['jurusan']);
+        $nama           = trim($data['nama'] ?? '');
+        $jenis_kelamin  = in_array($data['jenis_kelamin'] ?? 'L', ['L', 'P'], true) ? $data['jenis_kelamin'] : 'L';
+        $tempat_lahir   = trim($data['tempat_lahir'] ?? '');
+        $tanggal_lahir  = trim($data['tanggal_lahir'] ?? '');
+        $fakultas       = trim($data['fakultas'] ?? '');
+        $jurusan        = trim($data['jurusan'] ?? '');
         $angkatan       = (int)($data['angkatan'] ?? date('Y'));
-        $status         = in_array($data['status'] ?? 'Aktif', ['Aktif', 'Cuti', 'Lulus', 'DO']) ? $data['status'] : 'Aktif';
+        $status         = in_array($data['status'] ?? 'Aktif', ['Aktif', 'Cuti', 'Lulus', 'DO'], true) ? $data['status'] : 'Aktif';
         $email          = trim($data['email'] ?? '');
         $no_hp          = trim($data['no_hp'] ?? '');
-        $ipk            = (float)$data['ipk'];
+        $ipk            = (float)($data['ipk'] ?? 0);
 
         if ($fotoNama !== null) {
             $query = "UPDATE mahasiswa SET 

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../config/helper.php';
+require_once __DIR__ . '/../../config/session.php';
 $aset = rtrim(BASE_URL, '/') . '/assets';
 $pesanError = $_GET['error'] ?? '';
 $pesanSukses = '';
@@ -22,7 +23,7 @@ if (($_GET['pesan'] ?? '') === 'keluar'){
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="<?= e($aset); ?>/css/app.css">
+    <link rel="stylesheet" href="<?= e($aset); ?>/css/app.css?v=<?= filemtime(__DIR__ . '/../../assets/css/app.css'); ?>">
 </head>
 <body>
     <div class="auth">
@@ -49,6 +50,7 @@ if (($_GET['pesan'] ?? '') === 'keluar'){
                 <?php endif; ?>
 
                 <form action="<?= e(url('prosesLogin')); ?>" method="POST" class="rise rise-2">
+                    <input type="hidden" name="csrf_token" value="<?= generateCsrfToken(); ?>">
                     <div>
                         <label class="form-label" for="username">Username</label>
                         <input type="text" id="username" name="username" class="form-control" autocomplete="username" required autofocus>

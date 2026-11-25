@@ -11,7 +11,49 @@ require_once __DIR__ . '/../../config/helper.php';
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Libre+Barcode+39&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background: #eaedf2; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        :root {
+            --card: #ffffff;
+            --raised: #f1efeb;
+            --line: rgba(31, 27, 22, 0.16);
+            --ink: #1f1b16;
+            --accent: #0f6b66;
+            --accent-hover: #0b5753;
+            --ease: cubic-bezier(0.22, 1, 0.36, 1);
+            --bs-primary: #0f6b66;
+            --bs-primary-rgb: 15, 107, 102;
+        }
+        body { font-family: 'Inter', sans-serif; background: #f6f5f2; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .btn {
+            --bs-btn-border-radius: 10px;
+            --bs-btn-font-weight: 500;
+            --bs-btn-font-size: 14px;
+            line-height: 20px;
+            transition-property: background-color, border-color, color, transform;
+            transition-duration: 160ms;
+            transition-timing-function: var(--ease);
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary {
+            --bs-btn-bg: var(--accent);
+            --bs-btn-border-color: var(--accent);
+            --bs-btn-hover-bg: var(--accent-hover);
+            --bs-btn-hover-border-color: var(--accent-hover);
+            --bs-btn-active-bg: var(--accent-hover);
+            --bs-btn-active-border-color: var(--accent-hover);
+            --bs-btn-disabled-bg: var(--accent);
+            --bs-btn-disabled-border-color: var(--accent);
+        }
+        .btn-outline-secondary {
+            --bs-btn-color: var(--ink);
+            --bs-btn-bg: var(--card);
+            --bs-btn-border-color: var(--line);
+            --bs-btn-hover-color: var(--ink);
+            --bs-btn-hover-bg: var(--raised);
+            --bs-btn-hover-border-color: var(--line);
+            --bs-btn-active-color: var(--ink);
+            --bs-btn-active-bg: var(--raised);
+            --bs-btn-active-border-color: var(--line);
+        }
         
         /* Ukuran Standar Kartu ID Card (CR80 ratio: 85.6mm x 54mm) */
         .ktm-card {
@@ -136,7 +178,7 @@ require_once __DIR__ . '/../../config/helper.php';
         <div class="d-flex gap-3 align-items-center">
             <div>
                 <?php if (!empty($mhs['foto']) && file_exists(__DIR__ . '/../../uploads/' . $mhs['foto'])): ?>
-                    <img src="/pertemuan12/uploads/<?= e($mhs['foto']); ?>" alt="Foto Mahasiswa" class="ktm-photo">
+                    <img src="<?= BASE_URL ?>/uploads/<?= e($mhs['foto']); ?>" alt="Foto Mahasiswa" class="ktm-photo">
                 <?php else: ?>
                     <div class="ktm-photo-placeholder">
                         <i class="bi bi-person-fill"></i>

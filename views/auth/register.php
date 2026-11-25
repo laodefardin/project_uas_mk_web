@@ -15,7 +15,7 @@ $pesanError = $_GET['error'] ?? "";
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="<?= e($aset); ?>/css/app.css">
+    <link rel="stylesheet" href="<?= e($aset); ?>/css/app.css?v=<?= filemtime(__DIR__ . '/../../assets/css/app.css'); ?>">
 </head>
 <body>
     <div class="auth">
@@ -43,12 +43,12 @@ $pesanError = $_GET['error'] ?? "";
                     </div>
                     <div>
                         <label class="form-label" for="username">Username</label>
-                        <input type="text" id="username" name="username" class="form-control" autocomplete="username" required>
+                        <input type="text" id="username" name="username" class="form-control" autocomplete="username" minlength="4" pattern="\S+" required>
                         <div class="form-text">Minimal 4 karakter, tanpa spasi</div>
                     </div>
                     <div>
                         <label class="form-label" for="password">Password</label>
-                        <input type="password" id="password" name="password" class="form-control" autocomplete="new-password" required>
+                        <input type="password" id="password" name="password" class="form-control" autocomplete="new-password" minlength="8" required>
                         <div class="form-text">Minimal 8 karakter</div>
                     </div>
                     <button type="submit" class="btn btn-primary w-100">Buat akun</button>

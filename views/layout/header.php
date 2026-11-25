@@ -24,7 +24,7 @@ $inisial  = strtoupper(substr($namaUser, 0, 1));
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="<?= e($aset); ?>/css/app.css">
+    <link rel="stylesheet" href="<?= e($aset); ?>/css/app.css?v=<?= filemtime(__DIR__ . '/../../assets/css/app.css'); ?>">
 </head>
 
 <body>

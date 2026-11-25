@@ -70,7 +70,7 @@ function generateCsrfToken() {
 }
 
 function verifyCsrfToken($token) {
-    if (!isset($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
+    if (!isset($_SESSION['csrf_token']) || !is_string($token) || !hash_equals($_SESSION['csrf_token'], $token)) {
         http_response_code(403);
         die('CSRF token tidak valid. Silakan refresh halaman.');
     }

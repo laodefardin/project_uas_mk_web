@@ -1,10 +1,18 @@
 <?php
 $judul_halaman = "Tambah Mahasiswa Baru - SIAKAD";
 require_once __DIR__ . '/../layout/header.php';
+
+$pesan = ambilPesan();
 ?>
 
 <div class="row justify-content-center">
     <div class="col-lg-9">
+        <?php if ($pesan !== null): ?>
+        <div class="alert alert-<?= $pesan['tipe'] === 'sukses' ? 'success' : 'danger'; ?> alert-dismissible fade show mb-4" role="alert">
+            <?= e($pesan['isi']); ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
+        </div>
+        <?php endif; ?>
         <div class="card shadow-sm border-0">
             <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between">
                 <h5 class="m-0 text-primary fw-semibold">

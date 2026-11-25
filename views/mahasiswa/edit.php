@@ -1,10 +1,18 @@
 <?php
 $judul_halaman = "Edit Data Mahasiswa - SIAKAD";
 require_once __DIR__ . '/../layout/header.php';
+
+$pesan = ambilPesan();
 ?>
 
 <div class="row justify-content-center">
     <div class="col-lg-9">
+        <?php if ($pesan !== null): ?>
+        <div class="alert alert-<?= $pesan['tipe'] === 'sukses' ? 'success' : 'danger'; ?> alert-dismissible fade show mb-4" role="alert">
+            <?= e($pesan['isi']); ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
+        </div>
+        <?php endif; ?>
         <div class="card shadow-sm border-0">
             <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between">
                 <h5 class="m-0 text-primary fw-semibold">
@@ -23,7 +31,7 @@ require_once __DIR__ . '/../layout/header.php';
                         <div class="position-relative">
                             <?php 
                             $fotoSrc = (!empty($mahasiswa['foto']) && file_exists(__DIR__ . '/../../uploads/' . $mahasiswa['foto']))
-                                ? '/pertemuan12/uploads/' . htmlspecialchars($mahasiswa['foto'], ENT_QUOTES, 'UTF-8')
+                                ? BASE_URL . '/uploads/' . htmlspecialchars($mahasiswa['foto'], ENT_QUOTES, 'UTF-8')
                                 : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='115' viewBox='0 0 90 115'><rect width='90' height='115' fill='%23f1f5f9'/><circle cx='45' cy='42' r='18' fill='%23cbd5e1'/><path d='M20 95c0-18 12-28 25-28s25 10 25 28z' fill='%23cbd5e1'/></svg>";
                             ?>
                             <img id="previewFoto" src="<?= $fotoSrc; ?>" alt="Foto Mahasiswa" 
@@ -86,12 +94,19 @@ require_once __DIR__ . '/../layout/header.php';
                                     'Pendidikan Fisika',
                                     'Pendidikan Matematika'
                                 ];
-                                $currentProdi = $mahasiswa['jurusan'];
+                                $currentProdi = (string)($mahasiswa['jurusan'] ?? '');
+                                $matched = false;
                                 foreach ($prodiList as $p):
                                     $isSelected = ($currentProdi === $p || ($p === 'Pendidikan Teknologi Informasi' && strtolower($currentProdi) === 'pti') || ($p === 'Pendidikan Ilmu Pengetahuan Alam' && strtolower($currentProdi) === 'ipa'));
+                                    if ($isSelected) {
+                                        $matched = true;
+                                    }
                                 ?>
-                                <option value="<?= $p; ?>" <?= $isSelected ? 'selected' : ''; ?>><?= $p; ?></option>
+                                <option value="<?= e($p); ?>" <?= $isSelected ? 'selected' : ''; ?>><?= e($p); ?></option>
                                 <?php endforeach; ?>
+                                <?php if (!$matched && $currentProdi !== ''): ?>
+                                <option value="<?= e($currentProdi); ?>" selected><?= e($currentProdi); ?></option>
+                                <?php endif; ?>
                             </select>
                         </div>
                         <div class="col-md-2">

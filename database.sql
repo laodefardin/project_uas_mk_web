@@ -8,7 +8,7 @@ CREATE TABLE `admin` (
   `username` varchar(50) NOT NULL,
   `password` varchar(255) NOT NULL,
   `nama` varchar(100) NOT NULL,
-  `hak_akses` enum('admin','operator','','') NOT NULL DEFAULT 'operator',
+  `hak_akses` enum('admin','operator') NOT NULL DEFAULT 'operator',
   `dibuat_pada` datetime NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
