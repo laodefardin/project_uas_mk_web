@@ -4,7 +4,10 @@ function e($teks){
     return htmlspecialchars((string) $teks, ENT_QUOTES, 'UTF-8');
 }
 
-define('BASE_URL', '/pertemuan12/project_uas_mk_web');
+if (!defined('BASE_URL')) {
+    $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
+    define('BASE_URL', ($scriptDir === '/' || $scriptDir === '.') ? '' : rtrim($scriptDir, '/'));
+}
 
 function url($act = 'index', $tambahan = []) {
     $dasar = rtrim(BASE_URL, '/');

@@ -1,11 +1,12 @@
 RewriteEngine On
 
-# Sesuaikan dengan nama folder proyek kalian di htdocs
-RewriteBase /pertemuan12/project_uas_mk_web/
+# Tutup akses langsung ke folder internal
+RewriteRule ^(config|models|controllers|views)/ - [F,L]
 
 # Jangan ganggu berkas dan folder yang benar-benar ada (gambar di uploads, css, js)
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
 
 # Route khusus dengan parameter di URL
 RewriteRule ^edit/([^/]+)/?$ index.php?act=edit&nim=$1 [NC,QSA,L]
@@ -14,9 +15,6 @@ RewriteRule ^cetakKtm/([^/]+)/?$ index.php?act=cetakKtm&nim=$1 [NC,QSA,L]
 
 # Route umum untuk semua aksi (case-insensitive: login, exportCsv, cetakLaporan, profil, updatePassword, dll)
 RewriteRule ^([a-zA-Z0-9\-_]+)/?$ index.php?act=$1 [NC,QSA,L]
-
-# Tutup akses langsung ke folder internal
-RewriteRule ^(config|models|controllers|views)/ - [F,L]
 
 # Matikan daftar isi folder
 Options -Indexes
